@@ -12,10 +12,13 @@
     "mdrecord": "dist/cli.js"
   },
   "dependencies": {
+    "@commander-js/extra-typings": "^10.0.2",
     "commander": "^10.0.0",
     "import-meta-resolve": "^2.2.1",
     "music-metadata": "^8.1.3",
+    "netmd-exploits": "^0.4.3",
     "netmd-js": "^4.1.2",
+    "netmd-tocmanip": "^0.1.5",
     "usb": "^2.7.0"
   },
   "devDependencies": {

@@ -105,7 +105,11 @@ async function writeTrack(
 
 export default async function main(
   tracks: string[],
-  { erase, gapless }: { erase?: true; gapless?: true }
+  {
+    erase,
+    gapless,
+    setDiscTitle,
+  }: { erase?: true; gapless?: true; setDiscTitle?: true }
 ) {
   tempdir = await fs.mkdtemp(path.join(os.tmpdir(), "mdrecord-"));
   const gaplessRawPath = path.join(tempdir, "gapless.raw");
@@ -176,13 +180,20 @@ export default async function main(
     process.stderr.write("done\n");
   }
 
+  if (setDiscTitle && files[0].metadata.common.album) {
+    process.stderr.write("setting disc title... ");
+    await netmdInterface.setDiscTitle(files[0].metadata.common.album);
+    process.stderr.write("done\n");
+  }
+
   if (exploitStateManager) {
     const data = await readRaw(gaplessRawPath);
     const track = (await writeTrack(netmdInterface, data, "")) + 1;
 
     const factoryInterface = exploitStateManager.factoryIface;
     const sector0 = await readUTOCSector(factoryInterface, 0);
-    const toc = parseTOC(sector0);
+    const sector1 = await readUTOCSector(factoryInterface, 1);
+    const toc = parseTOC(sector0, sector1);
     splitTrack(toc, track, files);
     const binToc = reconstructTOC(toc);
     for (const [idx, sector] of binToc.entries()) {
@@ -204,12 +215,6 @@ export default async function main(
       const title = metadata.common.title || "";
       // eslint-disable-next-line no-await-in-loop
       await writeTrack(netmdInterface, await readRaw(rawPath), title);
-    }
-
-    if (files[0].metadata.common.album !== undefined) {
-      process.stderr.write("setting disc title... ");
-      await netmdInterface.setDiscTitle(files[0].metadata.common.album);
-      process.stderr.write("done\n");
     }
   }
 }

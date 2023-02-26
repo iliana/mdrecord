@@ -5,6 +5,7 @@ program
   .argument("<tracks...>")
   .option("--erase")
   .option("--gapless")
+  .option("--set-disc-title")
   .action((tracks, options) => {
     main(tracks, options)
       .then(() => process.exit())
